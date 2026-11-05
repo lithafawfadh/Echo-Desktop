@@ -8,6 +8,11 @@
 /dist/
 /.pnpm-store/
 
+# Environment & Secret files
+.env
+.env.*
+*.env
+
 # OS and IDE files
 .DS_Store
 Thumbs.db
