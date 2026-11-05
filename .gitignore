@@ -1,0 +1,16 @@
+# Local tools and dependencies (Strictly on D: drive)
+/.tools/
+/.cargo/
+/.rustup/
+/.xwin-cache/
+/target/
+/node_modules/
+/dist/
+/.pnpm-store/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
