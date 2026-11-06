@@ -11,6 +11,7 @@
   import MusicFlow from './components/MusicFlow.svelte';
   import SearchResultsView from './components/SearchResultsView.svelte';
   import DynamicAmbientMesh from './components/DynamicAmbientMesh.svelte';
+  import YouTubeAudioBridge from './components/YouTubeAudioBridge.svelte';
 
   let unlistenProgress: UnlistenFn | null = null;
   let unlistenTrack: UnlistenFn | null = null;
@@ -105,6 +106,9 @@
   {#if player.isFullScreenLyrics}
     <FullScreenPlayer />
   {/if}
+
+  <!-- Online YouTube Audio Playback Bridge -->
+  <YouTubeAudioBridge />
 </div>
 
 <style>
