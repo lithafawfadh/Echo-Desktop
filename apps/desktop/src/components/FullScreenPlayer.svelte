@@ -164,11 +164,26 @@
         <h1 class="track-title">{player.currentTrack?.title ?? 'Echo Music'}</h1>
         <h2 class="artist-name">{player.currentTrack?.artist ?? 'Lossless Audio'}</h2>
 
-        {#if player.currentTrack}
-          <div class="hi-res-banner">
-            <span class="matrix-tag">STUDIO MASTER</span>
+        {#if player.currentTrack && player.fidelityBadge}
+          <div
+            class="hi-res-banner"
+            style="--badge-color: {player.fidelityBadge.color}; --badge-bg: {player.fidelityBadge.bg}; --badge-border: {player.fidelityBadge.border}; --badge-glow: {player.fidelityBadge.glow};"
+          >
+            <span class="matrix-tag">
+              <span class="banner-dot" class:buffering={player.isBuffering}></span>
+              {player.fidelityBadge.bannerTitle}
+            </span>
             <span class="matrix-rate">
-              {((player.currentTrack.sample_rate_hz || 96000) / 1000).toFixed(1)} kHz / 24-BIT
+              {#if player.currentTrack.bit_depth}
+                {((player.currentTrack.sample_rate_hz || 44100) / 1000).toFixed(1)} kHz / {player.currentTrack.bit_depth}-BIT • {(player.currentTrack.codec || 'FLAC').toUpperCase()}
+              {:else if player.currentTrack.is_lossless}
+                {((player.currentTrack.sample_rate_hz || 44100) / 1000).toFixed(1)} kHz / 16-BIT • {(player.currentTrack.codec || 'FLAC').toUpperCase()}
+              {:else}
+                {player.currentTrack.bitrate_kbps || 160} KBPS • {(player.currentTrack.codec || 'OPUS').toUpperCase()}
+              {/if}
+            </span>
+            <span class="fidelity-pill">
+              {player.fidelityBadge.label}
             </span>
           </div>
         {/if}
@@ -328,28 +343,70 @@
   }
 
   .hi-res-banner {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 10px;
     margin-top: 14px;
+    padding: 5px 12px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--echo-radius-md);
+    width: fit-content;
+    backdrop-filter: blur(16px);
+    transition: all 0.3s ease;
   }
 
   .matrix-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-family: "NDot57", monospace;
     font-size: 9px;
-    color: var(--echo-color-accent);
-    background: rgba(215, 25, 32, 0.12);
-    border: 1px solid rgba(215, 25, 32, 0.3);
-    padding: 2px 8px;
+    color: var(--badge-color);
+    background: var(--badge-bg);
+    border: 1px solid var(--badge-border);
+    padding: 3px 8px;
     border-radius: 4px;
     letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+
+  .banner-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--badge-color);
+    box-shadow: 0 0 6px var(--badge-glow);
+  }
+
+  .banner-dot.buffering {
+    background: var(--echo-status-buffering);
+    box-shadow: 0 0 7px var(--echo-status-buffering);
+    animation: banner-pulse 1s infinite alternate;
+  }
+
+  @keyframes banner-pulse {
+    from { opacity: 0.35; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1.15); }
   }
 
   .matrix-rate {
     font-family: "NDot57", monospace;
     font-size: 11px;
-    color: var(--echo-lossless-gold);
+    color: var(--echo-text-primary);
     letter-spacing: 0.06em;
+  }
+
+  .fidelity-pill {
+    font-family: "NDot57", monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    color: var(--badge-color);
+    border: 1px solid var(--badge-border);
+    background: var(--badge-bg);
+    padding: 2px 7px;
+    border-radius: var(--echo-radius-full);
+    font-weight: 700;
   }
 
   .lyrics-viewport {

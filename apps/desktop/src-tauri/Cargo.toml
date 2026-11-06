@@ -21,3 +21,6 @@ echo-core = { workspace = true }
 echo-provider = { workspace = true }
 echo-audio = { workspace = true }
 echo-lyrics = { workspace = true, features = ["remote"] }
+
+[dev-dependencies]
+async-trait = { workspace = true }

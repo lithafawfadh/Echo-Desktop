@@ -6,7 +6,7 @@ use crate::cipher::{parse_player_script, YouTubeCipherEngine, DEFAULT_SIGNATURE_
 use crate::error::ProviderError;
 use crate::MusicProvider;
 use async_trait::async_trait;
-use echo_core::{AudioStream, Track};
+use echo_core::{AudioFidelity, AudioStream, Track};
 use regex::Regex;
 use serde_json::json;
 use tracing::debug;
@@ -165,6 +165,14 @@ impl YouTubeMusicClient {
 
 #[async_trait]
 impl MusicProvider for YouTubeMusicClient {
+    fn name(&self) -> &'static str {
+        "YouTubeMusicInnerTube"
+    }
+
+    fn supported_fidelity(&self) -> AudioFidelity {
+        AudioFidelity::LossyHigh
+    }
+
     async fn search(&self, query: &str) -> Result<Vec<Track>, ProviderError> {
         self.search_tracks(query).await
     }

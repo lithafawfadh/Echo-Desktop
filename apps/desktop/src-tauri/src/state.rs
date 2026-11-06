@@ -2,11 +2,11 @@ use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
 use echo_core::{AudioStream, PlaybackState, Track};
 use echo_audio::{AudioController, StreamingAudioEngine};
-use echo_provider::YouTubeMusicClient;
+use echo_provider::DynamicFallbackRouter;
 use echo_lyrics::LrcLibClient;
 
 pub struct AppState {
-    pub provider: Arc<YouTubeMusicClient>,
+    pub router: Arc<DynamicFallbackRouter>,
     pub audio_controller: Arc<AudioController>,
     pub audio_engine: Arc<StreamingAudioEngine>,
     pub lyrics_client: Arc<LrcLibClient>,
@@ -17,14 +17,23 @@ pub struct AppState {
 }
 
 impl AppState {
+    /// Constructs production AppState with default multi-tier fallback router
     pub fn new() -> Self {
+        let router = Arc::new(
+            DynamicFallbackRouter::with_defaults()
+                .expect("Failed to initialize DynamicFallbackRouter with defaults")
+        );
+        Self::with_router(router)
+    }
+
+    /// Constructs AppState with custom router (for testing or custom extension URLs)
+    pub fn with_router(router: Arc<DynamicFallbackRouter>) -> Self {
         let audio_controller = Arc::new(AudioController::new());
         let audio_engine = Arc::new(StreamingAudioEngine::new(audio_controller.clone()));
-        let provider = Arc::new(YouTubeMusicClient::new().expect("Failed to initialize InnerTube client"));
         let lyrics_client = Arc::new(LrcLibClient::new());
 
         Self {
-            provider,
+            router,
             audio_controller,
             audio_engine,
             lyrics_client,
@@ -33,5 +42,11 @@ impl AppState {
             playback_state: Arc::new(RwLock::new(PlaybackState::Stopped)),
             playback_abort: Arc::new(Mutex::new(None)),
         }
+    }
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self::new()
     }
 }

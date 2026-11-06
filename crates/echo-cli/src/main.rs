@@ -43,6 +43,8 @@ fn codec_label(codec: AudioCodec) -> &'static str {
         AudioCodec::Opus => "Opus",
         AudioCodec::Aac => "AAC",
         AudioCodec::Flac => "FLAC",
+        AudioCodec::Alac => "ALAC",
+        AudioCodec::Wav => "WAV",
         AudioCodec::Mp3 => "MP3",
         AudioCodec::Unknown => "Unknown",
     }

@@ -216,6 +216,7 @@ pub fn parse_search_response_typed(response: &InnerTubeSearchResponse) -> Result
                 album,
                 duration_seconds,
                 thumbnail_url,
+                isrc: None,
             });
         }
     }

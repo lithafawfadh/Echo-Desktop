@@ -114,7 +114,19 @@
           <div class="title-marquee echo-marquee-container">
             <span class="title-text echo-marquee-content">{player.currentTrack?.title ?? 'Echo Music'}</span>
           </div>
-          <span class="artist-text">{player.currentTrack?.artist ?? 'Select a track to stream'}</span>
+          <div class="artist-badge-row">
+            <span class="artist-text">{player.currentTrack?.artist ?? 'Select a track to stream'}</span>
+            {#if player.currentTrack && player.fidelityBadge}
+              <span
+                class="mini-spec-badge"
+                style="--badge-color: {player.fidelityBadge.color}; --badge-bg: {player.fidelityBadge.bg}; --badge-border: {player.fidelityBadge.border}; --badge-glow: {player.fidelityBadge.glow};"
+                title="{player.fidelityBadge.label} — {player.audioTechReadout}"
+              >
+                <span class="badge-dot" class:buffering={player.isBuffering}></span>
+                <span class="badge-text">{player.fidelityBadge.shortLabel}</span>
+              </span>
+            {/if}
+          </div>
         </div>
       </div>
 
@@ -278,12 +290,67 @@
     letter-spacing: -0.01em;
   }
 
+  .artist-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
   .artist-text {
     font-size: 11px;
     color: var(--echo-text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .mini-spec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 1.5px 7px;
+    background: var(--badge-bg);
+    border: 1px solid var(--badge-border);
+    border-radius: var(--echo-radius-full);
+    font-family: "NDot57", monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    color: var(--badge-color);
+    flex-shrink: 0;
+    user-select: none;
+    transition: all 0.2s var(--echo-spring-quick);
+  }
+
+  .mini-spec-badge:hover {
+    filter: brightness(1.25);
+    border-color: var(--badge-color);
+  }
+
+  .badge-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--badge-color);
+    box-shadow: 0 0 5px var(--badge-glow);
+    flex-shrink: 0;
+  }
+
+  .badge-dot.buffering {
+    background: var(--echo-status-buffering);
+    box-shadow: 0 0 6px var(--echo-status-buffering);
+    animation: badge-pulse 1s infinite alternate;
+  }
+
+  @keyframes badge-pulse {
+    from { opacity: 0.35; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1.2); }
+  }
+
+  .badge-text {
+    line-height: 1;
+    font-weight: 700;
   }
 
   .playback-controls {

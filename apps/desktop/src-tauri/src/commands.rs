@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, State, Window};
 use tracing::{info, warn};
 
-use echo_core::{AudioCodec, AudioStream, Lyrics, PlaybackProgress, PlaybackState, Track};
-use echo_provider::MusicProvider;
+use echo_core::{AudioCodec, AudioFidelity, AudioStream, Lyrics, PlaybackProgress, PlaybackState, Track};
+use echo_provider::{MusicProvider, RouterHealthReport};
 
 use crate::state::AppState;
 
@@ -21,6 +21,10 @@ pub struct TrackMetaPayload {
     pub bitrate_kbps: u32,
     pub sample_rate_hz: u32,
     pub is_lossless: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bit_depth: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fidelity: Option<AudioFidelity>,
 }
 
 /// Searches tracks via InnerTube YouTube Music provider
@@ -31,7 +35,7 @@ pub async fn search_tracks(
 ) -> Result<Vec<Track>, String> {
     info!("IPC search_tracks: query='{}'", query);
     state
-        .provider
+        .router
         .search(&query)
         .await
         .map_err(|e| format!("Search error: {e}"))
@@ -70,11 +74,23 @@ pub async fn resolve_stream_inner(
                 48000
             },
             is_lossless: track.id.starts_with("radar_") || track.id.starts_with("acoustic_"),
+            bit_depth: if track.id.starts_with("radar_") || track.id.starts_with("acoustic_") {
+                Some(24)
+            } else {
+                None
+            },
+            fidelity: if track.id.starts_with("radar_") || track.id.starts_with("acoustic_") {
+                Some(echo_core::AudioFidelity::LosslessHiRes)
+            } else {
+                Some(echo_core::AudioFidelity::LossyHigh)
+            },
+            content_length_bytes: None,
+            http_headers: std::collections::HashMap::new(),
         });
     }
 
     state
-        .provider
+        .router
         .resolve_stream(&track)
         .await
         .map_err(|e| format!("Stream resolution error: {e}"))
@@ -120,6 +136,8 @@ pub async fn play_stream(
         bitrate_kbps: stream.bitrate_kbps,
         sample_rate_hz: stream.sample_rate_hz,
         is_lossless: stream.is_lossless,
+        bit_depth: stream.bit_depth,
+        fidelity: stream.fidelity,
     };
 
     // Update state
@@ -383,6 +401,14 @@ pub async fn next_track(
         },
     );
     Ok(())
+}
+
+/// Retrieves health status across configured router tiers
+#[tauri::command]
+pub async fn get_router_health(
+    state: State<'_, AppState>,
+) -> Result<RouterHealthReport, String> {
+    Ok(state.router.check_health().await)
 }
 
 /// Minimizes the Tauri window

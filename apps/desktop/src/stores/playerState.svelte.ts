@@ -1,4 +1,13 @@
-import type { TrackMeta, Lyrics, PlaybackState } from '../types';
+import {
+  type TrackMeta,
+  type Lyrics,
+  type PlaybackState,
+  type AudioStream,
+  type AudioFidelity,
+  type FidelityBadgeConfig,
+  parseAudioFidelity,
+  resolveBadgeConfig,
+} from '../types';
 
 function computeHarmonicPalette(title: string, artist: string): [string, string, string, string] {
   let hash = 0;
@@ -62,6 +71,30 @@ export class PlayerState {
   formattedPosition = $derived(this.formatTime(this.positionMs));
   formattedDuration = $derived(this.formatTime(this.durationMs));
 
+  // Reactive audio quality badge configuration derived from active track
+  fidelityBadge = $derived<FidelityBadgeConfig | null>(
+    resolveBadgeConfig(this.currentTrack)
+  );
+
+  // Normalized active fidelity enum
+  activeFidelity = $derived<AudioFidelity | null>(
+    this.currentTrack ? parseAudioFidelity(this.currentTrack.fidelity) : null
+  );
+
+  // Formatted hardware technical spec string (e.g. "96.0 kHz / 24-BIT • FLAC")
+  audioTechReadout = $derived.by(() => {
+    if (!this.currentTrack) return '';
+    const rateKhz = ((this.currentTrack.sample_rate_hz || 44100) / 1000).toFixed(1);
+    const depth = this.currentTrack.bit_depth ? `${this.currentTrack.bit_depth}-BIT` : null;
+    const codec = (this.currentTrack.codec || 'FLAC').toUpperCase();
+    const kbps = this.currentTrack.bitrate_kbps ? `${this.currentTrack.bitrate_kbps} KBPS` : '';
+
+    if (this.currentTrack.is_lossless || (this.currentTrack.bit_depth && this.currentTrack.bit_depth >= 16)) {
+      return depth ? `${rateKhz} kHz / ${depth} • ${codec}` : `${rateKhz} kHz • ${codec}`;
+    }
+    return `${codec} • ${kbps || `${rateKhz} kHz`}`;
+  });
+
   formatTime(ms: number): string {
     const totalSecs = Math.floor(ms / 1000);
     const m = Math.floor(totalSecs / 60);
@@ -70,10 +103,30 @@ export class PlayerState {
   }
 
   setTrack(track: TrackMeta) {
-    this.currentTrack = track;
+    this.currentTrack = {
+      ...track,
+      fidelity: parseAudioFidelity(track.fidelity) ?? track.fidelity,
+    };
     this.durationMs = track.duration_seconds * 1000;
     this.positionMs = 0;
     this.palette = computeHarmonicPalette(track.title, track.artist);
+  }
+
+  /**
+   * Updates stream resolution properties in-place without resetting playback progress.
+   */
+  updateStreamMetadata(meta: Partial<TrackMeta> | AudioStream) {
+    if (!this.currentTrack) return;
+    const normalizedFidelity = parseAudioFidelity(meta.fidelity) ?? this.currentTrack.fidelity;
+    this.currentTrack = {
+      ...this.currentTrack,
+      codec: (meta.codec as any) ?? this.currentTrack.codec,
+      bitrate_kbps: meta.bitrate_kbps ?? this.currentTrack.bitrate_kbps,
+      sample_rate_hz: meta.sample_rate_hz ?? this.currentTrack.sample_rate_hz,
+      is_lossless: meta.is_lossless ?? this.currentTrack.is_lossless,
+      bit_depth: meta.bit_depth ?? this.currentTrack.bit_depth,
+      fidelity: normalizedFidelity,
+    };
   }
 
   addToQueue(track: TrackMeta) {

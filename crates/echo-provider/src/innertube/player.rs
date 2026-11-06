@@ -124,6 +124,10 @@ pub fn resolve_candidate_to_stream(
                 bitrate_kbps,
                 sample_rate_hz,
                 is_lossless: false,
+                bit_depth: None,
+                fidelity: Some(echo_core::AudioFidelity::LossyStandard),
+                content_length_bytes: None,
+                http_headers: std::collections::HashMap::new(),
             })
         }
         RawStreamCandidate::Cipher {
@@ -146,6 +150,10 @@ pub fn resolve_candidate_to_stream(
                 bitrate_kbps,
                 sample_rate_hz,
                 is_lossless: false,
+                bit_depth: None,
+                fidelity: Some(echo_core::AudioFidelity::LossyStandard),
+                content_length_bytes: None,
+                http_headers: std::collections::HashMap::new(),
             })
         }
     }
