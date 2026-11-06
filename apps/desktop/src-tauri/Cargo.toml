@@ -6,7 +6,7 @@ authors = ["Echo Desktop Contributors"]
 license = "GPL-3.0"
 
 [build-dependencies]
-tauri-build = { version = "2", default-features = false }
+tauri-build = { version = "2", default-features = false , features = [] }
 
 [dependencies]
 tauri = { version = "2", default-features = false, features = ["wry"] }
