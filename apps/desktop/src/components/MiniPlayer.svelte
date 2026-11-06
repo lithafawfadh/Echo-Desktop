@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
   import { player } from '../stores/playerState.svelte';
+  import { playTrackWithFallback } from '../lib/playback';
 
   let isHoveringScrubber = $state(false);
   let hoverFraction = $state(0);
@@ -49,7 +50,7 @@
     const next = player.playNext();
     if (next) {
       try {
-        await invoke('play_stream', { track: next });
+        await playTrackWithFallback(next);
       } catch (err) {
         console.warn('Next IPC:', err);
       }

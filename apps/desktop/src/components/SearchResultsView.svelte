@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { invoke } from '@tauri-apps/api/core';
   import { player } from '../stores/playerState.svelte';
+  import { playTrackWithFallback } from '../lib/playback';
   import type { TrackMeta } from '../types';
 
   async function handlePlay(track: TrackMeta) {
     player.setTrack(track);
     player.isPlaying = true;
     try {
-      await invoke('play_stream', { track });
+      await playTrackWithFallback(track);
     } catch (err) {
-      console.warn('Play stream IPC:', err);
+      console.warn('Play stream error:', err);
     }
   }
 

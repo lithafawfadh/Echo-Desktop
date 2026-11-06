@@ -32,6 +32,7 @@ fn main() {
             commands::minimize_window,
             commands::toggle_maximize_window,
             commands::close_window,
+            commands::play_direct_url,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Echo Desktop application");

@@ -257,6 +257,177 @@ pub async fn play_stream(
     Ok(stream)
 }
 
+/// Plays a stream from a pre-resolved URL supplied by the frontend WebView2 JS resolver.
+/// Used as a fallback when the Rust reqwest client is blocked by YouTube's bot guard.
+/// The frontend's fetch() runs in the WebView2 context which carries Google auth cookies.
+#[tauri::command]
+pub async fn play_direct_url(
+    app_handle: AppHandle,
+    state: State<'_, AppState>,
+    track: Track,
+    url: String,
+    codec: String,
+    bitrate_kbps: u32,
+    sample_rate_hz: u32,
+) -> Result<TrackMetaPayload, String> {
+    info!(
+        "IPC play_direct_url: track='{}' ({}) url={}…",
+        track.title,
+        track.id,
+        &url[..url.len().min(60)]
+    );
+
+    // Cancel any previous playback task
+    {
+        let mut abort_guard = state.playback_abort.lock().await;
+        if let Some(abort_tx) = abort_guard.take() {
+            let _ = abort_tx.send(());
+        }
+    }
+
+    // Map codec string from frontend to AudioCodec enum
+    let audio_codec = match codec.to_uppercase().as_str() {
+        "OPUS" => AudioCodec::Opus,
+        "AAC" | "M4A" => AudioCodec::Aac,
+        "MP3" => AudioCodec::Mp3,
+        "FLAC" => AudioCodec::Flac,
+        _ => AudioCodec::Aac, // safe default
+    };
+
+    let stream = AudioStream {
+        url: url.clone(),
+        codec: audio_codec,
+        bitrate_kbps,
+        sample_rate_hz,
+        is_lossless: false,
+        bit_depth: None,
+        fidelity: Some(AudioFidelity::LossyHigh),
+        content_length_bytes: None,
+        http_headers: std::collections::HashMap::new(),
+    };
+
+    let meta_payload = TrackMetaPayload {
+        id: track.id.clone(),
+        title: track.title.clone(),
+        artist: track.artist.clone(),
+        album: track.album.clone(),
+        duration_seconds: track.duration_seconds,
+        thumbnail_url: track.thumbnail_url.clone(),
+        codec: audio_codec,
+        bitrate_kbps,
+        sample_rate_hz,
+        is_lossless: false,
+        bit_depth: None,
+        fidelity: Some(AudioFidelity::LossyHigh),
+    };
+
+    // Update state
+    {
+        let mut t_guard = state.current_track.write().await;
+        *t_guard = Some(track.clone());
+    }
+    {
+        let mut s_guard = state.current_stream.write().await;
+        *s_guard = Some(stream.clone());
+    }
+    {
+        let mut state_guard = state.playback_state.write().await;
+        *state_guard = PlaybackState::Playing;
+    }
+
+    let _ = app_handle.emit("playback://track_change", &meta_payload);
+    let _ = app_handle.emit("playback://status", &PlaybackState::Playing);
+
+    // Fetch lyrics in background
+    let lyrics_client = state.lyrics_client.clone();
+    let app_handle_lyrics = app_handle.clone();
+    let lyrics_title = track.title.clone();
+    let track_artist = track.artist.clone();
+    let duration = track.duration_seconds;
+
+    tokio::spawn(async move {
+        match lyrics_client
+            .fetch_lyrics(&lyrics_title, &track_artist, Some(duration))
+            .await
+        {
+            Ok(lyrics) => {
+                info!("Lyrics loaded for '{}': {} lines", lyrics_title, lyrics.synced.len());
+                let _ = app_handle_lyrics.emit("lyrics://ready", &lyrics);
+            }
+            Err(e) => {
+                warn!("Lyrics fetch failed for '{}': {e}", lyrics_title);
+                let _ = app_handle_lyrics.emit("lyrics://ready", &Lyrics::default());
+            }
+        }
+    });
+
+    // Spawn CPAL audio engine task
+    let (abort_tx, mut abort_rx) = tokio::sync::oneshot::channel::<()>();
+    {
+        let mut abort_guard = state.playback_abort.lock().await;
+        *abort_guard = Some(abort_tx);
+    }
+
+    let controller = state.audio_controller.clone();
+    let engine = state.audio_engine.clone();
+    let stream_url = url.clone();
+    let duration_ms = (track.duration_seconds as u64) * 1000;
+    let app_handle_progress = app_handle.clone();
+    let state_status = state.playback_state.clone();
+    let track_title = track.title.clone();
+
+    tokio::spawn(async move {
+        controller.set_playing(true);
+        controller.update_progress(0, duration_ms);
+
+        let mut progress_rx = controller.subscribe_progress();
+        let app_handle_ev = app_handle_progress.clone();
+        tokio::spawn(async move {
+            while let Ok(progress) = progress_rx.recv().await {
+                let _ = app_handle_ev.emit("playback://progress", &progress);
+            }
+        });
+
+        tokio::select! {
+            _ = &mut abort_rx => {
+                info!("play_direct_url: Playback aborted for '{}'", track_title);
+            }
+            play_res = engine.play_stream(&stream_url) => {
+                if let Err(e) = play_res {
+                    warn!("play_direct_url: Audio device unavailable ({e}), using simulated clock");
+                    let step = 100u64;
+                    let mut interval = tokio::time::interval(Duration::from_millis(step));
+                    let mut pos = controller.position_ms();
+
+                    while pos < duration_ms {
+                        tokio::select! {
+                            _ = &mut abort_rx => { break; }
+                            _ = interval.tick() => {
+                                if controller.is_playing() {
+                                    pos = controller.position_ms() + step;
+                                    if pos > duration_ms { pos = duration_ms; }
+                                    controller.update_progress(pos, duration_ms);
+                                } else {
+                                    pos = controller.position_ms();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        controller.set_playing(false);
+        {
+            let mut sg = state_status.write().await;
+            *sg = PlaybackState::Stopped;
+        }
+        let _ = app_handle_progress.emit("playback://status", &PlaybackState::Stopped);
+    });
+
+    Ok(meta_payload)
+}
+
 /// Pauses current playback stream
 #[tauri::command]
 pub async fn pause_stream(

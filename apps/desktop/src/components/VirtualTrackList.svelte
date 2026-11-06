@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { invoke } from '@tauri-apps/api/core';
   import type { TrackMeta } from '../types';
   import { player } from '../stores/playerState.svelte';
+  import { playTrackWithFallback } from '../lib/playback';
 
   interface Props {
     items: TrackMeta[];
@@ -13,9 +13,9 @@
     player.setTrack(track);
     player.isPlaying = true;
     try {
-      await invoke('play_stream', { track });
+      await playTrackWithFallback(track);
     } catch (e) {
-      console.warn('VirtualTrackList play_stream IPC:', e);
+      console.warn('VirtualTrackList play_stream error:', e);
     }
   }
 
