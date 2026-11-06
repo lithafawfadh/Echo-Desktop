@@ -4,8 +4,8 @@
 /.rustup/
 /.xwin-cache/
 /target/
-/node_modules/
-/dist/
+node_modules/
+dist/
 /.pnpm-store/
 
 # Environment & Secret files
@@ -20,3 +20,4 @@ Thumbs.db
 .vscode/
 .idea/
 .agents/
+.memory/

@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* ==========================================================================
+     Color Palette: OLED Void & Technical Grays
+     ========================================================================== */
+  --echo-color-black: #000000;
+  --echo-color-ground: #060608;
+  --echo-color-surface-base: #0c0d11;
+  --echo-color-surface-elevated: #13151b;
+  --echo-color-surface-floating: #1a1c24;
+
+  /* Nothing OS Distinct Accent */
+  --echo-color-accent: #d71920;
+  --echo-color-accent-glow: rgba(215, 25, 32, 0.35);
+  --echo-color-accent-subtle: rgba(215, 25, 32, 0.12);
+
+  /* Translucent Liquid Glass Fills */
+  --echo-glass-lowest: rgba(255, 255, 255, 0.02);
+  --echo-glass-subtle: rgba(255, 255, 255, 0.04);
+  --echo-glass-medium: rgba(255, 255, 255, 0.07);
+  --echo-glass-prominent: rgba(255, 255, 255, 0.11);
+  --echo-glass-highlight: rgba(255, 255, 255, 0.18);
+
+  /* Specular Highlight Rim Borders */
+  --echo-border-rim: 1px solid rgba(255, 255, 255, 0.08);
+  --echo-border-rim-bright: 1px solid rgba(255, 255, 255, 0.15);
+  --echo-border-rim-gradient: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+
+  /* Text & Typographic Alpha Levels */
+  --echo-text-primary: #f2f3f5;
+  --echo-text-secondary: #90949d;
+  --echo-text-muted: #545761;
+  --echo-text-disabled: #31333a;
+
+  /* Audio Status Indications */
+  --echo-lossless-gold: #d4af37;
+  --echo-lossless-hi-res: #e5a93c;
+  --echo-status-success: #22c55e;
+  --echo-status-buffering: #f59e0b;
+
+  /* Elevation, Radii & Spacing */
+  --echo-radius-sm: 8px;
+  --echo-radius-md: 14px;
+  --echo-radius-lg: 20px;
+  --echo-radius-xl: 24px;
+  --echo-radius-full: 9999px;
+
+  --echo-spacing-xs: 4px;
+  --echo-spacing-sm: 8px;
+  --echo-spacing-md: 16px;
+  --echo-spacing-lg: 24px;
+  --echo-spacing-xl: 32px;
+
+  /* Blur & Shadow Tokens */
+  --echo-blur-subtle: blur(12px);
+  --echo-blur-glass: blur(24px) saturate(190%);
+  --echo-blur-ambient: blur(64px);
+
+  --echo-shadow-glass: 0 16px 36px -8px rgba(0, 0, 0, 0.65),
+                       0 0 0 1px rgba(255, 255, 255, 0.06);
+  --echo-shadow-dock: 0 -8px 32px -4px rgba(0, 0, 0, 0.7),
+                      inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+
+  /* Spring Curves */
+  --echo-spring-quick: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --echo-spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --echo-spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@font-face {
+  font-family: 'NDot57';
+  src: local('NDot57'), local('D-DIN Exp'), local('JetBrains Mono'), local('Consolas');
+  font-display: swap;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--echo-color-ground);
+  color: var(--echo-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+  user-select: none;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Monospaced Dot-Matrix Class for Technical Indicators */
+.echo-font-matrix {
+  font-family: "NDot57", "D-DIN Exp", "JetBrains Mono", monospace;
+  font-feature-settings: "tnum" on, "zero" on;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Humanist Display Class for Titles */
+.echo-font-display {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+  letter-spacing: -0.022em;
+  font-optical-sizing: auto;
+}
+
+/* Liquid Glass Card Surface */
+.echo-glass-card {
+  position: relative;
+  background: var(--echo-glass-medium);
+  backdrop-filter: var(--echo-blur-glass);
+  -webkit-backdrop-filter: var(--echo-blur-glass);
+  border-radius: var(--echo-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--echo-shadow-glass);
+  contain: paint;
+}
+
+/* 1px Specular Light Catch Rim */
+.echo-glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--echo-radius-xl);
+  padding: 1px;
+  background: var(--echo-border-rim-gradient);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Micro Noise Surface to Prevent Gradient Stepping (Section 1.3) */
+.echo-glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+}
+
+/* Title Overflow Marquee (Section 3.3) */
+.echo-marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+
+.echo-marquee-content {
+  display: inline-block;
+  animation: echo-marquee-scroll 10s linear infinite;
+  animation-delay: 1.8s;
+  will-change: transform;
+}
+
+@keyframes echo-marquee-scroll {
+  0%, 15% {
+    transform: translateX(0%);
+  }
+  85%, 100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Syllable Fill Rendering */
+.echo-syllable-word {
+  display: inline-block;
+  position: relative;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.22);
+  background: linear-gradient(
+    to right,
+    #ffffff var(--word-progress, 0%),
+    rgba(255, 255, 255, 0.22) var(--word-progress, 0%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: transform 0.2s var(--echo-spring-bounce);
+  will-change: transform, background;
+}
+
+.echo-syllable-word.active {
+  transform: scale(1.04);
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+}
+
+/* Scrollbar refinement */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.24);
+}

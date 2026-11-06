@@ -6,6 +6,7 @@ members = [
     "crates/echo-audio",
     "crates/echo-lyrics",
     "crates/echo-cli",
+    "apps/desktop/src-tauri",
 ]
 
 [workspace.package]

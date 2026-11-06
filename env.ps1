@@ -14,3 +14,9 @@ if (Test-Path $cargoBin) {
 Write-Host "Echo Music environment loaded on D: drive." -ForegroundColor Green
 Write-Host "CARGO_HOME: $env:CARGO_HOME"
 Write-Host "RUSTUP_HOME: $env:RUSTUP_HOME"
+
+if ($args.Count -gt 0) {
+    & $args[0] $args[1..($args.Count - 1)]
+    exit $LASTEXITCODE
+}
+
