@@ -1,0 +1,25 @@
+{
+  "playabilityStatus": {
+    "status": "OK"
+  },
+  "streamingData": {
+    "expiresInSeconds": "21540",
+    "adaptiveFormats": [
+      {
+        "itag": 140,
+        "mimeType": "audio/mp4; codecs=\"mp4a.40.2\"",
+        "bitrate": 128000,
+        "averageBitrate": 128000,
+        "audioSampleRate": "44100",
+        "audioChannels": 2,
+        "signatureCipher": "s=abcdef1234567890&sp=sig&url=https%3A%2F%2Frr1---sn-xxx.googlevideo.com%2Fvideoplayback%3Fitag%3D140%26source%3Dyoutube%26n%3DX_LCxVDjAavgE5t"
+      }
+    ]
+  },
+  "videoDetails": {
+    "videoId": "test_cipher_vid",
+    "title": "Cipher Track",
+    "author": "Cipher Artist",
+    "lengthSeconds": "200"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "playabilityStatus": {
+    "status": "OK"
+  },
+  "streamingData": {
+    "expiresInSeconds": "21540",
+    "adaptiveFormats": [
+      {
+        "itag": 137,
+        "mimeType": "video/mp4; codecs=\"avc1.640028\"",
+        "bitrate": 4200000,
+        "width": 1920,
+        "height": 1080,
+        "url": "https://rr1---sn-xxx.googlevideo.com/videoplayback?itag=137"
+      },
+      {
+        "itag": 251,
+        "mimeType": "audio/webm; codecs=\"opus\"",
+        "bitrate": 160500,
+        "audioSampleRate": "48000",
+        "audioChannels": 2,
+        "url": "https://rr1---sn-xxx.googlevideo.com/videoplayback?itag=251&n=sample_token_251"
+      },
+      {
+        "itag": 140,
+        "mimeType": "audio/mp4; codecs=\"mp4a.40.2\"",
+        "bitrate": 128200,
+        "averageBitrate": 128000,
+        "audioSampleRate": "44100",
+        "audioChannels": 2,
+        "url": "https://rr1---sn-xxx.googlevideo.com/videoplayback?itag=140&n=X_LCxVDjAavgE5t"
+      }
+    ]
+  },
+  "videoDetails": {
+    "videoId": "5NV6Rdv1a3I",
+    "title": "Get Lucky",
+    "author": "Daft Punk",
+    "lengthSeconds": "248"
+  }
+}

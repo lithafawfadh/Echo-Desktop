@@ -9,6 +9,16 @@ echo-core.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
+reqwest = { workspace = true }
+futures-util = "0.3"
+bytes = "1.0"
 ringbuf = "0.4"
 symphonia = { version = "0.5", features = ["all"] }
-cpal = "0.15"
+cpal = { version = "0.15", optional = true }
+
+[features]
+default = ["cpal"]
+headless = []
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full", "test-util"] }

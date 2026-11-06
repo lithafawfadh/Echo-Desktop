@@ -1,31 +1,37 @@
+pub mod cipher;
+pub mod error;
+pub mod innertube;
+
 use async_trait::async_trait;
 use echo_core::{AudioCodec, AudioStream, Track};
 use serde::Deserialize;
-use thiserror::Error;
 use tracing::{debug, info};
 
-#[derive(Error, Debug)]
-pub enum ProviderError {
-    #[error("Network error: {0}")]
-    Network(#[from] reqwest::Error),
-    #[error("Track not found: {0}")]
-    TrackNotFound(String),
-    #[error("No stream available for track: {0}")]
-    NoStreamAvailable(String),
-    #[error("Provider API error: {0}")]
-    ApiError(String),
-}
+pub use cipher::{
+    deobfuscate_stream_url, descramble_signature, execute_cipher_ops, execute_cipher_ops_in_place,
+    execute_n_ops, execute_n_ops_in_place, parse_player_script, transform_n_token,
+    transform_stream_url_n, transform_stream_url_n_with_ops, CipherOp, NOp, PlayerCipherState,
+    YouTubeCipherEngine, DEFAULT_SIGNATURE_TIMESTAMP,
+};
+pub use error::ProviderError;
+pub use innertube::{
+    build_client_context, create_innertube_http_client, parse_duration, parse_player_response,
+    parse_search_response, parse_search_response_typed, resolve_candidate_to_stream,
+    select_itag_140_stream, RawStreamCandidate, YouTubeMusicClient, INNERTUBE_BASE_URL,
+    SONG_FILTER_PARAMS,
+};
 
+/// Trait abstracting music catalog search and audio stream resolution.
 #[async_trait]
 pub trait MusicProvider: Send + Sync {
-    /// Search tracks by text query
+    /// Searches tracks by a text query string.
     async fn search(&self, query: &str) -> Result<Vec<Track>, ProviderError>;
 
-    /// Resolve an audio stream for a track
+    /// Resolves a playable audio stream for a given track.
     async fn resolve_stream(&self, track: &Track) -> Result<AudioStream, ProviderError>;
 }
 
-/// Client for Echo Music's official lossless-extension and 320kbs-extension
+/// Client for Echo Music's official lossless-extension and 320kbs-extension (legacy router support).
 pub struct EchoExtensionProvider {
     client: reqwest::Client,
     endpoint_url: String,
@@ -70,8 +76,12 @@ impl MusicProvider for EchoExtensionProvider {
         let url = format!("{}/search", self.endpoint_url);
         let resp = self.client.get(&url).query(&[("q", query)]).send().await?;
 
-        if !resp.status().is_success() {
-            return Err(ProviderError::ApiError(format!("Status {}", resp.status())));
+        let status = resp.status();
+        if !status.is_success() {
+            return Err(ProviderError::ApiError {
+                code: status.as_u16(),
+                message: format!("Status {}", status),
+            });
         }
 
         let items: Vec<ExtensionSearchItem> = resp.json().await?;
@@ -99,8 +109,9 @@ impl MusicProvider for EchoExtensionProvider {
             .send()
             .await?;
 
-        if !resp.status().is_success() {
-            return Err(ProviderError::NoStreamAvailable(track.id.clone()));
+        let status = resp.status();
+        if !status.is_success() {
+            return Err(ProviderError::NoStreamsAvailable(track.id.clone()));
         }
 
         let data: ExtensionStreamResponse = resp.json().await?;

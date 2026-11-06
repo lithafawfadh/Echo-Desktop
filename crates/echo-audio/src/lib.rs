@@ -1,3 +1,16 @@
+//! Echo Music audio playback controller, decoder, ring buffer, and streaming engine.
+
+pub mod decoder;
+pub mod engine;
+pub mod ring_buffer;
+
+pub use decoder::{ChannelStreamReader, DecodeStats, StreamDecoder};
+pub use engine::StreamingAudioEngine;
+pub use ring_buffer::{
+    calculate_position_ms, AudioConsumer, AudioProducer, AudioRingBuffer, BufferHealthMetrics,
+    CpalOutputStream, DEFAULT_PRE_ROLL_SAMPLES, DEFAULT_RING_BUFFER_CAPACITY,
+};
+
 use echo_core::PlaybackProgress;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
@@ -47,12 +60,24 @@ impl AudioController {
         self.is_playing.store(playing, Ordering::Relaxed);
     }
 
+    pub fn is_playing_arc(&self) -> Arc<AtomicBool> {
+        self.is_playing.clone()
+    }
+
     pub fn position_ms(&self) -> u64 {
         self.position_ms.load(Ordering::Relaxed)
     }
 
+    pub fn position_ms_arc(&self) -> Arc<AtomicU64> {
+        self.position_ms.clone()
+    }
+
     pub fn duration_ms(&self) -> u64 {
         self.duration_ms.load(Ordering::Relaxed)
+    }
+
+    pub fn duration_ms_arc(&self) -> Arc<AtomicU64> {
+        self.duration_ms.clone()
     }
 
     pub fn update_progress(&self, position_ms: u64, duration_ms: u64) {

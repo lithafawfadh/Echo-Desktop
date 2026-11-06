@@ -1,0 +1,156 @@
+{
+  "contents": {
+    "tabbedSearchResultsRenderer": {
+      "tabs": [
+        {
+          "tabRenderer": {
+            "content": {
+              "sectionListRenderer": {
+                "contents": [
+                  {
+                    "musicShelfRenderer": {
+                      "title": { "runs": [{ "text": "Songs" }] },
+                      "contents": [
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "flexColumns": [
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Get Lucky",
+                                        "navigationEndpoint": {
+                                          "watchEndpoint": { "videoId": "5NV6Rdv1a3I" }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Daft Punk",
+                                        "navigationEndpoint": {
+                                          "browseEndpoint": { "browseId": "UC_x5XG1OV2P6uZZ5FSM9Ttw" }
+                                        }
+                                      },
+                                      { "text": " • " },
+                                      {
+                                        "text": "Random Access Memories",
+                                        "navigationEndpoint": {
+                                          "browseEndpoint": { "browseId": "MPREb_0nQcE5p9Z2x" }
+                                        }
+                                      },
+                                      { "text": " • " },
+                                      { "text": "4:08" }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "thumbnail": {
+                              "musicThumbnailRenderer": {
+                                "thumbnail": {
+                                  "thumbnails": [
+                                    { "url": "https://lh3.googleusercontent.com/cover_small.jpg", "width": 226, "height": 226 },
+                                    { "url": "https://lh3.googleusercontent.com/cover_large.jpg=w120-h120-l90-rj", "width": 544, "height": 544 }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "flexColumns": [
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Instant Crush",
+                                        "navigationEndpoint": {
+                                          "watchEndpoint": { "videoId": "a5uQMwRMHcs" }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      { "text": "Daft Punk" },
+                                      { "text": " • " },
+                                      {
+                                        "text": "Random Access Memories",
+                                        "navigationEndpoint": {
+                                          "browseEndpoint": { "browseId": "MPREb_0nQcE5p9Z2x" }
+                                        }
+                                      },
+                                      { "text": " • " },
+                                      { "text": "5:37" }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "thumbnail": {
+                              "musicThumbnailRenderer": {
+                                "thumbnail": {
+                                  "thumbnails": [
+                                    { "url": "https://lh3.googleusercontent.com/instant_crush.jpg", "width": 544, "height": 544 }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "flexColumns": [
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Alive 2007 (Full Concert)",
+                                        "navigationEndpoint": {
+                                          "watchEndpoint": { "videoId": "live_concert_01" }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      { "text": "Daft Punk" },
+                                      { "text": " • " },
+                                      { "text": "1:24:15" }
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

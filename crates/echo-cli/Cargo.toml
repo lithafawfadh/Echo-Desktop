@@ -8,11 +8,15 @@ license.workspace = true
 name = "echo"
 path = "src/main.rs"
 
+[features]
+# Gates the real AudioEngine calls (requires Milestone 2 — echo-audio AudioEngine)
+live-audio = []
+
 [dependencies]
 echo-core.workspace = true
 echo-provider.workspace = true
-echo-lyrics.workspace = true
+echo-lyrics = { path = "../echo-lyrics", features = ["remote"] }
 echo-audio.workspace = true
 tokio.workspace = true
 tracing.workspace = true
-tracing-subscriber.workspace = true
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
